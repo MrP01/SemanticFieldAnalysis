@@ -1,0 +1,88 @@
+\documentclass[12pt, a4paper]{article}
+\PassOptionsToPackage{sharp}{prettytex/boxes}
+\usepackage{prettytex/base}
+
+\setlength{\topmargin}{0.0in}
+\setlength{\oddsidemargin}{0.33in}
+\setlength{\textheight}{9.0in}
+\setlength{\textwidth}{6.0in}
+\renewcommand{\baselinestretch}{1.25}
+
+\usepackage{prettytex/math}
+\usepackage[nameinlink]{cleveref}
+\usepackage[cleveref]{prettytex/math-theorems}
+\usepackage{prettytex/mathematicians}
+\usepackage{prettytex/gfx}
+\usepackage{prettytex/code}
+\usepackage{prettytex/pseudo}
+\usepackage{prettytex/thesis}
+
+\setlength{\headheight}{19.53pt}
+\setlength{\headsep}{1.8em}
+\setlength{\belowcaptionskip}{-12pt}
+\addbibresource{sources.bib}
+\setminted{fontsize=\footnotesize}
+\AfterEndEnvironment{minted}{\vspace*{-0.8cm}}
+\tikzexternalize[prefix=tikz/]
+\renewcommand{\operatorcolor}{black}
+
+\newcommand{\chebyshev}{Chebyshev\xspace}
+\newcommand{\tschebfun}{\textcolor{themecolor3}{TschebFun}\xspace}
+\newcommand{\heatfun}{\textcolor{themecolor3}{HeatFun}\xspace}
+
+\newcommand{\topictitle}{Semantic Field Analysis \\ \large by example of the Heat Equation}
+\newcommand{\candidatenumber}{1072462}
+\newcommand{\course}{Networks}
+
+\title{\topictitle}
+\author{Candidate \candidatenumber}
+\date{\today}
+
+% ✅ Prepare report
+
+\begin{document}
+  \pagestyle{plain}
+  \begin{center}
+    \vspace*{-2.5cm}
+    \Large \topictitle \\
+    \vspace{.3cm}
+
+    \normalsize Special Topic on \textcolor{themecolor3}{\textsc{\course}}\\
+    \normalsize Candidate Number: \textcolor{themecolor3}{\candidatenumber}
+    \vspace{.3cm}
+  \end{center}
+
+  \begin{abstract}
+    \label{abstract}
+    This work will attempt to
+  \end{abstract}
+
+  % \begin{figure}[H]
+  %   \centering
+  %   \includegraphics[width=\linewidth]{figures/screenshot.png}
+  %   \caption{Screenshot of the graphical user interface. After entering an initial expression $u_0(x)$, depicted in grey, the simulation will run upon pressing 'Start'. The solution at time $t$, depicted in blue, is represented as a \chebyshev series of degree 29.}
+  % \end{figure}
+
+  \pagebreak
+  \pagestyle{normal}
+
+  % \tableofcontents
+  % \pagebreak
+
+  \section{Motivation}
+  For non-periodic problem settings, \chebyshev series are a fantastic choice \parencite{cwBiemann}.
+
+  \pagebreak
+  \section{Here we go}
+  Let $\N$ denote the nonnegative integers, so $0 \in \N$.
+
+  \pagebreak
+  \section{Discussion and Outlook}
+  Bla
+
+  \pagebreak
+  \printbibliography
+
+  \appendix
+  \section{Appendix Things?}
+\end{document}
