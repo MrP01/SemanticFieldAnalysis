@@ -12,25 +12,27 @@
 \usepackage[nameinlink]{cleveref}
 \usepackage[cleveref]{prettytex/math-theorems}
 \usepackage{prettytex/mathematicians}
-\usepackage{prettytex/gfx}
-\usepackage{prettytex/code}
-\usepackage{prettytex/pseudo}
+% \usepackage{prettytex/gfx}
+% \usepackage{prettytex/code}
+% \usepackage{prettytex/pseudo}
 \usepackage{prettytex/thesis}
+\usepackage{bbm}
 
 \setlength{\headheight}{19.53pt}
 \setlength{\headsep}{1.8em}
 \setlength{\belowcaptionskip}{-12pt}
 \addbibresource{sources.bib}
-\setminted{fontsize=\footnotesize}
+% \setminted{fontsize=\footnotesize}
 \AfterEndEnvironment{minted}{\vspace*{-0.8cm}}
-\tikzexternalize[prefix=tikz/]
+% \tikzexternalize[prefix=tikz/]
 \renewcommand{\operatorcolor}{black}
 
 \newcommand{\chebyshev}{Chebyshev\xspace}
 \newcommand{\tschebfun}{\textcolor{themecolor3}{TschebFun}\xspace}
 \newcommand{\heatfun}{\textcolor{themecolor3}{HeatFun}\xspace}
+\newcommand{\identity}{\mathbbm{1}}
 
-\newcommand{\topictitle}{Semantic Field Analysis \\ \large by example of the Heat Equation}
+\newcommand{\topictitle}{Unsupervised Semantic Field Analysis \\ \large by example of the Heat Equation}
 \newcommand{\candidatenumber}{1072462}
 \newcommand{\course}{Networks}
 
@@ -70,11 +72,43 @@
   % \pagebreak
 
   \section{Motivation}
-  For non-periodic problem settings, \chebyshev series are a fantastic choice \parencite{cwBiemann}.
+  For non-periodic problem settings, \chebyshev series are a fantastic choice \parencite{cw-biemann}.
 
   \pagebreak
-  \section{Here we go}
-  Let $\N$ denote the nonnegative integers, so $0 \in \N$.
+  \section{Introduction}
+  Let $\N$ denote the positive integers, so $0 \notin \N$.
+
+  \begin{definition}{Undirected Graph}{undirected-graph}
+    A graph $G = (V, E)$ with vertices $V$ and edges $E \subseteq V \times V$ is undirected if and only if $(v_i, v_j) \in E \Rightarrow (v_j, v_i) \in E \quad \forall\; v_i, v_j \in V$.
+  \end{definition}
+
+  \begin{definition}{Adjacency Matrix}{adjacency-matrix}
+    Let $A \in \{0, 1\}^{n \times n}$ denote the symmetric adjacency matrix of an undirected graph $G = (V, E)$. Its entries are given by $a_{ij} = \{A\}_{ij} = \identity_{(v_i, v_j) \in E}$, so $a_{ij} = 1$ if vertex $v_i$ is connected to $v_j$ and $0$ otherwise. By construction, $A = A^T$.
+  \end{definition}
+
+  Further let $m := |E|$ and $n = |V|$ denote the number of edges and vertices, respectively.
+  The degree $d_i$ of a vertex $v_i \in V$ is defined by the number of edges connecting to it, so $$d_i := \deg(v_i) = \big|\left\{(v_j, v_k) \in E \;|\; v_j = v_i\right\}\big|\,,$$ for an undirected graph $G = (V, E)$. By the Handshaking lemma, $$\sum_{i=1}^{n} d_i = \sum_{v \in V} \deg(v) = 2m\,.$$
+
+  \begin{definition}{Graph Clustering}{clustering}
+    Let $C = \left\{C_i \subseteq V \right\}_{i=1 ... n_C}$ denote a clustering of $G = (V, E)$ into $n_C \in \N$ clusters where $C_i \cap C_j = \{\} \; \forall\,i, j \in \{1, ..., n_C\}$ and $\bigcup_{i=1}^{n_C} C_i = V$. Let $s_i \in \{1, ..., n_C\}$ denote the assigned cluster of vertex $v_i \in V$.
+  \end{definition}
+
+  \begin{definition}{Modularity}{modularity}
+    For a given undirected graph $G = (V, E)$ and clustering $C$, let $$Q := \frac{1}{2m} \sum_{i=1}^{n} \sum_{j=1}^{n} \left(A_{ij} - \frac{d_i d_j}{2m}\right) \delta(s_i, s_j)\,,$$ with $\delta(\cdot, \cdot)$ the Kronecker delta indicating whether two vertices $v_i$ and $v_j$ belong to the same cluster \parencite{grindrod-lecture-notes}.
+  \end{definition}
+
+  Modularity is a measure of the quality of a clustering (also referred to as a partitioning) of $G$. It can also be written as
+  $$Q = \frac{1}{2m} \sum_{c=1}^{n_C} \left[\sum_{v_i, v_j \in C_i} \left(A_{ij} - \frac{d_i d_j}{2m}\right)\right]\,.$$
+
+  \section{Clustering Algorithms}
+  \subsection{Chinese Whispers}
+  \cite{cw-biemann}.
+  \subsection{Watset}
+  \cite{watset}.
+  \subsection{Fiedler}
+  \cite{fortunato}.
+  \subsection{Louvain}
+  \cite{grindrod-lecture-notes}.
 
   \pagebreak
   \section{Discussion and Outlook}
