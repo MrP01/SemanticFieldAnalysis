@@ -14,7 +14,7 @@
 \usepackage{prettytex/mathematicians}
 % \usepackage{prettytex/gfx}
 % \usepackage{prettytex/code}
-% \usepackage{prettytex/pseudo}
+\usepackage{prettytex/pseudo}
 \usepackage{prettytex/thesis}
 \usepackage{bbm}
 
@@ -76,39 +76,76 @@
 
   \pagebreak
   \section{Introduction}
-  Let $\N$ denote the positive integers, so $0 \notin \N$.
+  Let $\N = \Z^+$ denote the positive integers and $N_0 := \{0\} \cup \N$ the nonnegative integers.
 
+  The methods we will discuss to identify semantic fields will be based on graph clustering algorithms applied to a text corpus word connectedness / neighbourhood network.
+  As we will discuss later, different notions of connectedness can give us different insight into the structure of a natural language.
+  We will focus our attention on methods for undirected graphs, ``graphs without direction'' (cf. \Cref{def:undirected-graph}).
   \begin{definition}{Undirected Graph}{undirected-graph}
     A graph $G = (V, E)$ with vertices $V$ and edges $E \subseteq V \times V$ is undirected if and only if $(v_i, v_j) \in E \Rightarrow (v_j, v_i) \in E \quad \forall\; v_i, v_j \in V$.
   \end{definition}
 
+  Vertices are also often referred to as \textit{nodes}.
+  Every graph $G$ is uniquely described by its adjacency matrix $A \in \{0, 1\}^{n \times n}$ (\Cref{def:adjacency-matrix}), which allows us to talk about ``linear algebra'' of graphs.
+
   \begin{definition}{Adjacency Matrix}{adjacency-matrix}
-    Let $A \in \{0, 1\}^{n \times n}$ denote the symmetric adjacency matrix of an undirected graph $G = (V, E)$. Its entries are given by $a_{ij} = \{A\}_{ij} = \identity_{(v_i, v_j) \in E}$, so $a_{ij} = 1$ if vertex $v_i$ is connected to $v_j$ and $0$ otherwise. By construction, $A = A^T$.
+    Let $A \in \{0, 1\}^{n \times n}$ denote the symmetric adjacency matrix of an undirected graph $G = (V, E)$. Its entries are given by $a_{ij} = \{A\}_{ij} = \identity_{(v_i, v_j) \in E}$, so $a_{ij} = 1$ if vertex $v_i$ is connected to $v_j$ and $0$ otherwise.
   \end{definition}
 
-  Further let $m := |E|$ and $n = |V|$ denote the number of edges and vertices, respectively.
-  The degree $d_i$ of a vertex $v_i \in V$ is defined by the number of edges connecting to it, so $$d_i := \deg(v_i) = \big|\left\{(v_j, v_k) \in E \;|\; v_j = v_i\right\}\big|\,,$$ for an undirected graph $G = (V, E)$. By the Handshaking lemma, $$\sum_{i=1}^{n} d_i = \sum_{v \in V} \deg(v) = 2m\,.$$
+  By construction, $A = A^T$ is symmetric and has all-$0$s in the diagonal, a definition that corresponds to the fact that you cannot be friends with yourself in a social network.
+
+  Further let $m := |E|$ and $n := |V|$ denote the number of edges and vertices, respectively.
+  The degree $d_i$ of a vertex $v_i \in V$ is defined by the number of edges connecting to it, so $$d_i := \deg(v_i) = \big|\left\{(v_j, v_k) \in E \;|\; v_j = v_i\right\}\big|\,,$$ for an undirected graph $G = (V, E)$. The handshaking lemma (\Cref{lemma:handshaking}) tells us an important fact useful for normalisation.
+  \begin{lemma}{Handshaking}{handshaking}
+    For every finite, undirected graph $G = (V, E)$ the individual vertex degrees sum up to exactly twice the number of edges, so $$\sum_{i=1}^{n} d_i = \sum_{v \in V} \deg(v) = 2m\,.$$
+  \end{lemma}
+
+  The individual vertex degrees can be summarised in the so-called \textit{degree matrix} $D := \diag(d_1, ..., d_n)$, $D \in \N_0^{n \times n}$. The graph \textit{Laplacian} is defined by $L := D - A$.
+
+  Given a graph, we are interested in performing graph clustering, also referred to as community detection or graph partitioning, the goal of which is to obtain a set of mutually exclusive clusters $C_i \subseteq V$ (cf. \Cref{def:clustering}).
 
   \begin{definition}{Graph Clustering}{clustering}
     Let $C = \left\{C_i \subseteq V \right\}_{i=1 ... n_C}$ denote a clustering of $G = (V, E)$ into $n_C \in \N$ clusters where $C_i \cap C_j = \{\} \; \forall\,i, j \in \{1, ..., n_C\}$ and $\bigcup_{i=1}^{n_C} C_i = V$. Let $s_i \in \{1, ..., n_C\}$ denote the assigned cluster of vertex $v_i \in V$.
   \end{definition}
+
+  These clusterings may be better or worse depending on the context, but a generally solid measure of ``clustering goodness'' is \textit{modularity} (\Cref{def:modularity}).
 
   \begin{definition}{Modularity}{modularity}
     For a given undirected graph $G = (V, E)$ and clustering $C$, let $$Q := \frac{1}{2m} \sum_{i=1}^{n} \sum_{j=1}^{n} \left(A_{ij} - \frac{d_i d_j}{2m}\right) \delta(s_i, s_j)\,,$$ with $\delta(\cdot, \cdot)$ the Kronecker delta indicating whether two vertices $v_i$ and $v_j$ belong to the same cluster \parencite{grindrod-lecture-notes}.
   \end{definition}
 
   Modularity is a measure of the quality of a clustering (also referred to as a partitioning) of $G$. It can also be written as
-  $$Q = \frac{1}{2m} \sum_{c=1}^{n_C} \left[\sum_{v_i, v_j \in C_i} \left(A_{ij} - \frac{d_i d_j}{2m}\right)\right]\,.$$
+  $$Q = \frac{1}{2m} \sum_{c=1}^{n_C} \left[\sum_{v_i, v_j \in C_i} \left(A_{ij} - \frac{d_i d_j}{2m}\right)\right]\,,$$
+  which might make its purpose a bit clearer.
 
   \section{Clustering Algorithms}
   \subsection{Chinese Whispers}
+  \begin{algorithm}[language=pseudo, caption={\centering The \textit{Chinese Whispers} algorithm due to \cite{cw-biemann}}]
+Input: an undirected graph $G = (V, E)$.
+Output: a graph clustering $C = \{C_i\}_{i=1, ..., n_C}$ into $n_C$ classes.
+
+Initialise the algorithm with $n_C = n$ classes, one per vertex.
+while there are changes or the iteration maximum is reached, do
+  for $v_i$ in shuffle($V$), do
+    Set $s_i = 3$
+  end
+end
+  \end{algorithm}
+
+  Corresponds to an agent-based simulation of a social network
   \cite{cw-biemann}.
   \subsection{Watset}
   \cite{watset}.
+  \subsection{Spectral Clustering Methods}
+  \cite{fortunato}.
   \subsection{Fiedler}
   \cite{fortunato}.
   \subsection{Louvain}
   \cite{grindrod-lecture-notes}.
+
+  \section{Author analysis?}
+  Authors whose works circulate around these semantic fields:
+  bla bla, maybe not that interesting
 
   \pagebreak
   \section{Discussion and Outlook}
