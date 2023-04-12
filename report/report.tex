@@ -32,7 +32,7 @@
 \newcommand{\heatfun}{\textcolor{themecolor3}{HeatFun}\xspace}
 \newcommand{\identity}{\mathbbm{1}}
 
-\newcommand{\topictitle}{Unsupervised Semantic Field Analysis \\ \large by example of the Heat Equation}
+\newcommand{\topictitle}{Unsupervised Semantic Field Analysis \\ \large by methods from community detection}
 \newcommand{\candidatenumber}{1072462}
 \newcommand{\course}{Networks}
 
@@ -42,6 +42,8 @@
 
 % ✅ Prepare report
 % Insert a few pictures from references maybe
+% Try out simulated Annealing
+% in the introduction, mention all the methods described by Fortunato et al. (lots of text)
 
 \begin{document}
   \pagestyle{plain}
@@ -60,11 +62,10 @@
     This work will attempt to
   \end{abstract}
 
-  % \begin{figure}[H]
-  %   \centering
-  %   \includegraphics[width=\linewidth]{figures/screenshot.png}
-  %   \caption{Screenshot of the graphical user interface. After entering an initial expression $u_0(x)$, depicted in grey, the simulation will run upon pressing 'Start'. The solution at time $t$, depicted in blue, is represented as a \chebyshev series of degree 29.}
-  % \end{figure}
+  \begin{figure}[H]
+    \centering
+    \caption{Add some sort of graph plot here.}
+  \end{figure}
 
   \pagebreak
   \pagestyle{normal}
@@ -97,13 +98,15 @@
 
   Further let $m := |E|$ and $n := |V|$ denote the number of edges and vertices, respectively.
   The degree $d_i$ of a vertex $v_i \in V$ is defined by the number of edges connecting to it, so $$d_i := \deg(v_i) = \big|\left\{(v_j, v_k) \in E \;|\; v_j = v_i\right\}\big|\,,$$ for an undirected graph $G = (V, E)$. The handshaking lemma (\Cref{lemma:handshaking}) tells us an important fact useful for normalisation.
-  \begin{lemma}{Handshaking}{handshaking}
+  \begin{lemma}{Handshake}{handshaking}
     For every finite, undirected graph $G = (V, E)$ the individual vertex degrees sum up to exactly twice the number of edges, so $$\sum_{i=1}^{n} d_i = \sum_{v \in V} \deg(v) = 2m\,.$$
   \end{lemma}
 
   The individual vertex degrees can be summarised in the so-called \textit{degree matrix} $D := \diag(d_1, ..., d_n)$, $D \in \N_0^{n \times n}$. The graph \textit{Laplacian} is defined by $L := D - A$.
+  % TODO: need this matrix?
 
-  Given a graph, we are interested in performing graph clustering, also referred to as community detection or graph partitioning, the goal of which is to obtain a set of mutually exclusive clusters $C_i \subseteq V$ (cf. \Cref{def:clustering}).
+  Given a graph, we are interested in performing \textbf{graph clustering}, also referred to as \textbf{community detection} or \textbf{graph partitioning}, the goal of which is to obtain a set of mutually exclusive clusters $C_i \subseteq V$ (cf. \Cref{def:clustering}).
+  The term \textit{graph partitioning} is more frequently used in the context of minimal cuts, where one aims to minimise each \textit{cut size} referring to the number of edges in between clusters.
 
   \begin{definition}{Graph Clustering}{clustering}
     Let $C = \left\{C_i \subseteq V \right\}_{i=1 ... n_C}$ denote a clustering of $G = (V, E)$ into $n_C \in \N$ clusters where $C_i \cap C_j = \{\} \; \forall\,i, j \in \{1, ..., n_C\}$ and $\bigcup_{i=1}^{n_C} C_i = V$. Let $s_i \in \{1, ..., n_C\}$ denote the assigned cluster of vertex $v_i \in V$.
@@ -112,14 +115,42 @@
   These clusterings may be better or worse depending on the context, but a generally solid measure of ``clustering goodness'' is \textit{modularity} (\Cref{def:modularity}).
 
   \begin{definition}{Modularity}{modularity}
-    For a given undirected graph $G = (V, E)$ and clustering $C$, let $$Q := \frac{1}{2m} \sum_{i=1}^{n} \sum_{j=1}^{n} \left(A_{ij} - \frac{d_i d_j}{2m}\right) \delta(s_i, s_j)\,,$$ with $\delta(\cdot, \cdot)$ the Kronecker delta indicating whether two vertices $v_i$ and $v_j$ belong to the same cluster \parencite{grindrod-lecture-notes}.
+    For a given undirected graph $G = (V, E)$ and clustering $C$, let $$Q := \frac{1}{2m} \sum_{i=1}^{n} \sum_{j=1}^{n} \left(A_{ij} - \frac{d_i d_j}{2m}\right) \delta(s_i, s_j)\,,$$ with $\delta(\cdot, \cdot)$ the Kronecker delta indicating whether two vertices $v_i$ and $v_j$ belong to the same cluster \parencite{lambiotte-louvain-clustering}.
   \end{definition}
 
   Modularity is a measure of the quality of a clustering (also referred to as a partitioning) of $G$. It can also be written as
   $$Q = \frac{1}{2m} \sum_{c=1}^{n_C} \left[\sum_{v_i, v_j \in C_i} \left(A_{ij} - \frac{d_i d_j}{2m}\right)\right]\,,$$
   which might make its purpose a bit clearer.
 
-  \section{Clustering Algorithms}
+  \section{Clustering Methods and Algorithms}
+  In order to find ...
+
+  Community detection is, in principle, usually a ``very hard'' task given the vast number of possible system configurations as the graph grows in the number of edges or vertices, a statement which can be made more precise using complexity theory.
+  In conventional complexity theory, problems are filed into different complexity classes when analysing their runtime and memory usage.
+  There exist
+  \begin{enumerate}[noitemsep,topsep=0pt,parsep=0pt,partopsep=0pt]
+    \item NL (Nondeterministic Logarithmic space)
+    \item P (Polynomial time)
+    \item NP (Nondeterministic Polynomial time)
+    \item PSPACE (Polynomial space)
+    \item EXPTIME (Exponential time)
+    \item EXPSPACE (Exponential space)
+  \end{enumerate}
+  computational complexity classes, sorted by the amount of problems contained in them (NL $\subseteq$ P $\subseteq$ NP $\subseteq$ PSPACE $\subseteq$ EXPTIME $\subseteq$ EXPSPACE).
+  A particularly interesting open problem is whether P = NP, one of the millennium prize problems and the most important open problem in computer science.
+
+  \begin{definition}{NP-Hardness}{np-hard}
+    A problem is referred to as \textit{NP-hard} if and only if it is at least as hard as the hardest problems in the complexity class NP (nondeterministic polynomial time). Formally written,
+    $$\mathrm{NP} := \bigcup_{k \in \N} \mathrm{NTIME}(n^k)$$
+    the union of all decision problems with runtime bounded by $\mathcal{O}(n^k)$.
+  \end{definition}
+
+  Many community detection algorithms or problems relating to it are NP-hard \parencite{fortunato}.
+  It is therefore often futile to employ exact algorithms as they quickly start to become infeasible for larger system sizes.
+
+  \subsection{Embeddings}
+  Cosine-Similarity
+
   \subsection{Girvan-Newman}
   \subsection{Louvain}
   \cite{grindrod-lecture-notes}.
@@ -151,6 +182,15 @@ end
 
   \subsection{Fiedler}
   \cite{fortunato}.
+
+  \section{Results}
+  An itemize with some semantic field clusters we found
+
+  Plotty plot
+
+  Apply to Karate Club
+
+  Computational complexity table from \cite{watset}, also referencing complexity section above.
 
   \section{Author analysis?}
   Authors whose works circulate around these semantic fields:
