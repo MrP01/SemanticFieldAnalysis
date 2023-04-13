@@ -17,6 +17,7 @@
 \usepackage{prettytex/pseudo}
 \usepackage{prettytex/thesis}
 \usepackage{bbm}
+\usepackage{tabularray}
 
 \setlength{\headheight}{19.53pt}
 \setlength{\headsep}{1.8em}
@@ -42,8 +43,9 @@
 
 % ✅ Prepare report
 % Insert a few pictures from references maybe
-% Try out simulated Annealing
+% Try out Simulated Annealing? (Fortunato) -- works really well (cf. Fortunato Table 1)
 % in the introduction, mention all the methods described by Fortunato et al. (lots of text)
+% derive the modularity gain described in the Louvain paper
 
 \begin{document}
   \pagestyle{plain}
@@ -76,6 +78,9 @@
   \section{Motivation}
   For non-periodic problem settings, \chebyshev series are a fantastic choice \parencite{cw-biemann}.
 
+  In the context of Natural Language Processing, graph clustering methods can also be employed for various other tasks such as word sense induction or language separation.
+  In this work however, we will only focus on semantic field tagging.
+
   \pagebreak
   \section{Introduction}
   Let $\N = \Z^+$ denote the positive integers and $N_0 := \{0\} \cup \N$ the nonnegative integers.
@@ -103,7 +108,7 @@
   \end{lemma}
 
   The individual vertex degrees can be summarised in the so-called \textit{degree matrix} $D := \diag(d_1, ..., d_n)$, $D \in \N_0^{n \times n}$. The graph \textit{Laplacian} is defined by $L := D - A$.
-  % TODO: need this matrix?
+  % TODO: need this matrix? If yes, use proper (big) definition.
 
   Given a graph, we are interested in performing \textbf{graph clustering}, also referred to as \textbf{community detection} or \textbf{graph partitioning}, the goal of which is to obtain a set of mutually exclusive clusters $C_i \subseteq V$ (cf. \Cref{def:clustering}).
   The term \textit{graph partitioning} is more frequently used in the context of minimal cuts, where one aims to minimise each \textit{cut size} referring to the number of edges in between clusters.
@@ -111,6 +116,12 @@
   \begin{definition}{Graph Clustering}{clustering}
     Let $C = \left\{C_i \subseteq V \right\}_{i=1 ... n_C}$ denote a clustering of $G = (V, E)$ into $n_C \in \N$ clusters where $C_i \cap C_j = \{\} \; \forall\,i, j \in \{1, ..., n_C\}$ and $\bigcup_{i=1}^{n_C} C_i = V$. Let $s_i \in \{1, ..., n_C\}$ denote the assigned cluster of vertex $v_i \in V$.
   \end{definition}
+
+  \begin{figure}[h]
+    \centering
+    \includegraphics[width=0.3\linewidth]{figures/graphpartitioning.pdf}
+    \caption{Partitioning of a graph using \textit{cuts} \parencite{fortunato-2009}.}
+  \end{figure}
 
   These clusterings may be better or worse depending on the context, but a generally solid measure of ``clustering goodness'' is \textit{modularity} (\Cref{def:modularity}).
 
@@ -124,6 +135,8 @@
 
   \section{Clustering Methods and Algorithms}
   In order to find ...
+  Most clustering methods can be broadly categorised into spectral, partitional (such as k-means clustering), hierarchical, randomised, divisive and quality-optimisation algorithms.
+  An interesting approach is Markov-Chain-Clustering, which may employ Simulated Annealing \cite{fortunato}.
 
   Community detection is, in principle, usually a ``very hard'' task given the vast number of possible system configurations as the graph grows in the number of edges or vertices, a statement which can be made more precise using complexity theory.
   In conventional complexity theory, problems are filed into different complexity classes when analysing their runtime and memory usage.
@@ -150,47 +163,111 @@
 
   \subsection{Embeddings}
   Cosine-Similarity
+  $$\rho_{ij} = \arccos\left(\frac{\vec{a_i} \vec{a_j}}{\norm{\vec{a_i}}_2 \cdot \norm{\vec{a_j}}}_2\right)$$
 
   \subsection{Girvan-Newman}
+  The clustering method deduced in \cite{girvan-newman} was a clear revolution at the time and brought graph clustering / community detection methods closer to physicists.
+
   \subsection{Louvain}
+  The popular algorithm introduced by \cite{lambiotte-louvain-clustering} is based on modularity optimisation (cf. \Cref{def:modularity}) and has computational complexity of only $\mathcal{O}(m)$.
+  It is referred to as the \textit{Louvain method} named after the University of Louvain in Belgium, alma mater of the first author.
+  The Louvain method is divided into two phases: Phase One (local optimisation) and Phase Two (merging of vertices).
   \cite{grindrod-lecture-notes}.
+
+  \begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{figures/blondel.png}
+    \caption{Louvain Graph Clustering Method \cite{lambiotte-louvain-clustering}.}
+  \end{figure}
+
+  Louvain is very effective, in part because a change (improvement) in modularity obtained by reassigning an isolated (not yet clustered) vertex $v_i$ to a community $C_j$ may be explicitly obtained by
+  $$\Delta Q={\bigg [}{\frac {\Sigma _{in}+2k_{i,in}}{2m}}-{\bigg (}{\frac {\Sigma _{tot}+k_{i}}{2m}}{\bigg )}^{2}{\bigg ]}-{\bigg [}{\frac {\Sigma _{in}}{2m}}-{\bigg (}{\frac {\Sigma _{tot}}{2m}}{\bigg )}^{2}-{\bigg (}{\frac {k_{i}}{2m}}{\bigg )}^{2}{\bigg ]} \,,$$
+  which is highly useful from a computational perspective
   \cite{lambiotte-louvain-clustering}.
+
+  Louvain is among the most widely used techniques for graph clustering and is available in numerous software packages.
 
   % https://en.wikipedia.org/wiki/Louvain_method
 
   \subsection{Chinese Whispers}
+  This method, like the Louvain method, also initialises the algorithm by assigning each vertex its own category (cluster).
+
   \begin{algorithm}[language=pseudo, caption={\centering The \textit{Chinese Whispers} algorithm due to \cite{cw-biemann}}]
 Input: an undirected graph $G = (V, E)$.
 Output: a graph clustering $C = \{C_i\}_{i=1, ..., n_C}$ into $n_C$ classes.
 
-Initialise the algorithm with $n_C = n$ classes, one per vertex.
-while there are changes or the iteration maximum is reached, do
+Initialise with $n_C = n$ classes, one per vertex.
+while there are changes, do
   for $v_i$ in shuffle($V$), do
     Set $s_i = 3$
   end
 end
   \end{algorithm}
 
-  Corresponds to an agent-based simulation of a social network
-  \cite{cw-biemann}.
+  Corresponds to an agent-based simulation of a social network \cite{cw-biemann}.
+  Similar to Markov-Chain-Clustering \cite{van-dongen}, \cite{fortunato}.
+
+  The algorithm may equivalently be defined by considering the \textit{class matrix} $\mathcal{D} \in \{0, 1\}^{n \times n_C}$ of a graph $G = (V, E)$ in which rows represent nodes and columns represent clusters $C_j \in C$.
+  So $G_{ij} = 1$ if $v_i$ belongs to $C_j$ and $0$ otherwise.
+  The algorithm operates iteratively and updates the class matrix $\mathcal{D}^{(k)}$ using
+  $$M: \{0, 1\}^{n \times n_C} \mapsto \{0, 1\}^{n \times n_C}, \quad \{M(\mathcal{D})\}_{ij} = \mathcal{D}_{ij}$$ % TODO: this is not great
+  $$\mathcal{D}^{(k+1)} = M(\mathcal{D}^{(k)}) A, \quad k = 0, 1, 2, ..., N$$
+  per iteration $k$, where $\mathcal{D}^{(0)} = I$ is the identity, corresponding to the initialisation of individual classes for each vertex.
+
+  The paper also discusses acquisition of word classes (semantic fields), where they ran Chinese Whispers against the British National Corpus (BNC) to identify clusters of similar words.
+  In order to improve performance, they cut off the 2000 most frequent words in the corpus which we will also employ.
+  This set of highly frequent words is likely to contain the \textit{core vocabulary} of the language including, but not limited to, pronouns, conjunctions, prepositions and similar parts of speech.
+  \cite{cw-biemann} identified 282 clusters, 26 of which contained more than 100 words.
+  Word clustering methods such as this one may even be used to improve part-of-speech tagging \parencite{ushioda-improved-pos-tagging}.
+
+  \begin{table}[H]
+    \centering
+    \caption{Table ordered by size \cite{cw-biemann}.}
+    \begin{tblr}{colspec={ X[c] X[4,j,m] }}
+      \hline
+      Size $|C_i|$ & Sample Words                                                                            \\
+      \hline
+      18432        & secret, officials, transport, unemployment, farm, county, wood, procedure, grounds, ... \\
+      4916         & busy, grey, tiny, thin, sufficient, attractive, vital, ...                              \\
+      4192         & filled, revealed, experienced, learned, pushed, occurred, ...                           \\
+      3515         & White, Green, Jones, Hill, Brown, Lee, Lewis, Young, ...                                \\
+      2211         & Ian, Alan, Martin, Tony, Prince, Chris, Brian, Harry, Andrew, Christ, Steve, ...        \\
+      1855         & Central, Leeds, Manchester, Australia, Yorkshire, Belfast, Glasgow, Middlesbrough, ...  \\
+    \end{tblr}
+  \end{table}
 
   \subsection{Watset}
-  \cite{watset}.
+  A more recent work \cite{watset} describes a meta-algorithm for graph clustering in the context of Natural Language Processing, which can be based on Chinese Whispers and also other methods.
 
   \subsection{Spectral Clustering Methods}
+  % very good resource: https://theory.epfl.ch/vishnoi/Lxb-Web.pdf
   \cite{fortunato}.
 
   \subsection{Fiedler}
   \cite{fortunato}.
 
+  \section{Method}
+  We shall also remove the 2000 most frequent words
+
   \section{Results}
   An itemize with some semantic field clusters we found
+
+  \begin{table}
+    \centering
+    \caption{Results ordered by size.}
+    \begin{tblr}{colspec={ X[c] X[4,j,m] }}
+      \hline
+      Size $|C_i|$ & Sample Words                                                                            \\
+      \hline
+      18432        & secret, officials, transport, unemployment, farm, county, wood, procedure, grounds, ... \\
+    \end{tblr}
+  \end{table}
 
   Plotty plot
 
   Apply to Karate Club
 
-  Computational complexity table from \cite{watset}, also referencing complexity section above.
+  Computational complexity table from \cite{watset}, also referencing complexity section above. Fortunato also has complexities.
 
   \section{Author analysis?}
   Authors whose works circulate around these semantic fields:
