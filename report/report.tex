@@ -16,14 +16,13 @@
 % \usepackage{prettytex/code}
 \usepackage{prettytex/pseudo}
 \usepackage{prettytex/thesis}
-\usepackage{bbm}
 \usepackage{tabularray}
+\usepackage{cancel}
+\usepackage{bbm}
 
 \setlength{\headheight}{19.53pt}
 \setlength{\headsep}{1.8em}
-\setlength{\belowcaptionskip}{-12pt}
 \addbibresource{sources.bib}
-% \setminted{fontsize=\footnotesize}
 \AfterEndEnvironment{minted}{\vspace*{-0.8cm}}
 % \tikzexternalize[prefix=tikz/]
 \renewcommand{\operatorcolor}{black}
@@ -46,6 +45,7 @@
 % Try out Simulated Annealing? (Fortunato) -- works really well (cf. Fortunato Table 1)
 % in the introduction, mention all the methods described by Fortunato et al. (lots of text)
 % derive the modularity gain described in the Louvain paper
+% analyze / mention: is the network small-world or not?
 
 \begin{document}
   \pagestyle{plain}
@@ -129,8 +129,8 @@
     For a given undirected graph $G = (V, E)$ and clustering $C$, let $$Q := \frac{1}{2m} \sum_{i=1}^{n} \sum_{j=1}^{n} \left(A_{ij} - \frac{d_i d_j}{2m}\right) \delta(s_i, s_j)\,,$$ with $\delta(\cdot, \cdot)$ the Kronecker delta indicating whether two vertices $v_i$ and $v_j$ belong to the same cluster \parencite{lambiotte-louvain-clustering}.
   \end{definition}
 
-  Modularity is a measure of the quality of a clustering (also referred to as a partitioning) of $G$. It can also be written as
-  $$Q = \frac{1}{2m} \sum_{c=1}^{n_C} \left[\sum_{v_i, v_j \in C_i} \left(A_{ij} - \frac{d_i d_j}{2m}\right)\right]\,,$$
+  Modularity is a measure of the quality of a clustering (also referred to as a partitioning) of $G$. It can also be written as the sum of individual cluster contributions
+  $$Q = \sum_{c=1}^{n_C} Q_c = \frac{1}{2m} \sum_{c=1}^{n_C} \left[\sum_{v_i \in C_c} \sum_{v_j \in C_c} \left(A_{ij} - \frac{d_i d_j}{2m}\right)\right]\,,$$
   which might make its purpose a bit clearer.
 
   \section{Clustering Methods and Algorithms}
@@ -161,12 +161,15 @@
   Many community detection algorithms or problems relating to it are NP-hard \parencite{fortunato}.
   It is therefore often futile to employ exact algorithms as they quickly start to become infeasible for larger system sizes.
 
+  Note that here we only consider an unweighted, undirected graph, while most clustering algorithms also allow working with a weighted graph $\tilde{G} = (V, \tilde{E})$ where $\tilde{E} \subset V \times V \times \R^+$ is a set of three-tuples $(v_i, v_j, w_{ij})$ instead of vertex pairs. Or equivalently, one can define a function $w: \tilde{E} \mapsto \R^+$ which maps vertex pairs (edges) to their respective weight.
+
   \subsection{Embeddings}
   Cosine-Similarity
   $$\rho_{ij} = \arccos\left(\frac{\vec{a_i} \vec{a_j}}{\norm{\vec{a_i}}_2 \cdot \norm{\vec{a_j}}}_2\right)$$
 
   \subsection{Girvan-Newman}
-  The clustering method deduced in \cite{girvan-newman} was a clear revolution at the time and brought graph clustering / community detection methods closer to physicists.
+  The clustering method deduced in \cite{girvan-newman} was a clear revolution at the time and brought graph clustering / community detection methods closer to practicians.
+  Optimises centrality and betweenness.
 
   \subsection{Louvain}
   The popular algorithm introduced by \cite{lambiotte-louvain-clustering} is based on modularity optimisation (cf. \Cref{def:modularity}) and has computational complexity of only $\mathcal{O}(m)$.
@@ -174,16 +177,47 @@
   The Louvain method is divided into two phases: Phase One (local optimisation) and Phase Two (merging of vertices).
   \cite{grindrod-lecture-notes}.
 
-  \begin{figure}
+  \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth]{figures/blondel.png}
     \caption{Louvain Graph Clustering Method \cite{lambiotte-louvain-clustering}.}
   \end{figure}
 
-  Louvain is very effective, in part because a change (improvement) in modularity obtained by reassigning an isolated (not yet clustered) vertex $v_i$ to a community $C_j$ may be explicitly obtained by
-  $$\Delta Q={\bigg [}{\frac {\Sigma _{in}+2k_{i,in}}{2m}}-{\bigg (}{\frac {\Sigma _{tot}+k_{i}}{2m}}{\bigg )}^{2}{\bigg ]}-{\bigg [}{\frac {\Sigma _{in}}{2m}}-{\bigg (}{\frac {\Sigma _{tot}}{2m}}{\bigg )}^{2}-{\bigg (}{\frac {k_{i}}{2m}}{\bigg )}^{2}{\bigg ]} \,,$$
-  which is highly useful from a computational perspective
-  \cite{lambiotte-louvain-clustering}.
+  Louvain is very effective, in part because a change (improvement) in modularity obtained by reassigning an \textbf{isolated} (not yet clustered) vertex $v_i$ to a community $C_j$ may be explicitly obtained by
+  \begin{equation}
+    \Delta Q=\left[ \frac{\Sigma_{in}^{(j)} + k_{i,in}^{(j)}}{2 m} - \left(\frac{\Sigma_{tot}^{(j)} + k_{i}}{2m}\right)^2 \right] - \left[ \frac{\Sigma_{in}^{(j)}}{2m} - \left(\frac{\Sigma_{tot}^{(j)}}{2m}\right)^2 - \left(\frac{k_i}{2m}\right)^2 \right] \,,
+    \label{eq:blondel-deltaQ}
+  \end{equation}
+  (as given in the original paper) which is highly useful from a computational perspective \parencite{lambiotte-louvain-clustering}.
+  Here, we have $d_{i,in}^{(j)} := \left|\left\{(v_x, v_y) \in (C_j \times C_j) \cap E \;\big|\; v_x = v_i\right\}\right|$ the number of in-cluster edges connected to vertex $v_i$ and the corresponding $\Sigma_{in}^{(j)} := \sum_{v_i \in C_j} d_{i,in}^{(j)} = \left|(C_j \times C_j) \cap E\right|$ represents the total number of edges between vertices within the same cluster $C_j$ (so neglecting edges to vertices outside $C_j$).
+  Likewise, $\Sigma_{tot}^{(j)} := \sum_{v_i \in C_j} d_i$ denotes the sum of vertex degrees within the cluster $C_j$ (so including contributions to outside nodes).
+
+  In our case, the above weightings $k_j \in \R^+$ reduce to the degrees $d_j$ alone given that we operate on an unweighted, undirected graph $G = (V, E)$. Note that the above \Cref{eq:blondel-deltaQ} simplifies to
+  \begin{equation}
+    \Delta Q = \cancel{\frac{\Sigma_{in}^{(j)}}{2m}} + \frac{d_{i, in}^{(j)}}{2m} - \frac{\cancel{\left(\Sigma_{tot}^{(j)}\right)^2} + 2 \Sigma_{tot}^{(j)} d_i + \cancel{d_i^2}}{4m^2} - \cancel{\frac{\Sigma_{in}^{(j)}}{2m}} + \frac{\cancel{\left(\Sigma_{tot}^{(j)}\right)^2} + \cancel{d_i^2}}{4m^2} = \frac{d_{i, in}^{(j)}}{2m} - \frac{\Sigma_{tot}^{(j)} d_i}{2m^2} \,.
+    \label{eq:blondel-deltaQ-simplified}
+  \end{equation}
+
+  In more general terms, one may obtain the impact of moving a vertex $v_i \in V$ from cluster $C_a$ to $C_b$ by considering their individual contributions
+  $$Q_c = \sum_{v_i \in C_c} \sum_{v_j \in C_c} \left(A_{ij} - \frac{d_i d_j}{2m}\right) = \frac{\Sigma_{in}^{(j)}}{2m} - \left(\frac{\Sigma_{tot}^{(j)}}{2m}\right)^2\,,$$
+  to the total modularity $Q = \sum_{c=1}^{n_C} Q_c^{(c)}$, which are
+  \begin{align*}
+    \tilde{Q}_c^{(a)} & = \frac{\Sigma_{in}^{(a)} - d_{i, in}^{(a)}}{2m} - \left(\frac{\Sigma_{tot}^{(a)} - d_i}{2m}\right)^2\,, \\
+    \tilde{Q}_c^{(b)} & = \frac{\Sigma_{in}^{(b)} + d_{i, in}^{(b)}}{2m} - \left(\frac{\Sigma_{tot}^{(b)} + d_i}{2m}\right)^2\,,
+  \end{align*}
+  after moving vertex $v_i$ from cluster $C_a$ to $C_b$.
+  So the change in individual cluster modularity is given by the terms
+  \begin{align*}
+    \Delta Q_c^{(a)} & = \tilde{Q}_c^{(a)} - Q_c^{(a)} = \frac{-d_{i, in}^{(a)}}{2m} - \frac{d_i^2 - 2 \Sigma_{tot}^{(a)} d_i}{4m^2}\,, \\
+    \Delta Q_c^{(b)} & = \tilde{Q}_c^{(b)} - Q_c^{(b)} = \frac{d_{i, in}^{(b)}}{2m} - \frac{d_i^2 + 2 \Sigma_{tot}^{(b)} d_i}{4m^2}\,,
+  \end{align*}
+  which yield the total modularity change $\Delta Q = \Delta Q_c^{(a)} + \Delta Q_c^{(b)}$ in the general case.
+  Considering the special case when vertex $v_i \in V$ is still isolated, so when $C_a = \{v_i\}$ contains exactly that one vertex, we can further simplify to
+  $$\Delta Q = \cancel{\frac{d_i^2}{4m^2}} + \frac{d_{i,in}^{(b)}}{2m} - \frac{\cancel{d_i^2} + 2 d_i \Sigma_{tot}^{(b)}}{4m^2} = \frac{d_{i,in}^{(b)}}{2m} - \frac{\Sigma_{tot}^{(b)} d_i}{2m^2} \,,$$
+  because $\Sigma_{in}^{(a)} = 0$, $\Sigma_{tot}^{(a)} = d_i$ and therefore $\Delta Q_c^{(a)} = \frac{d_i^2}{4m^2}$, and we arrive at the same expression given by \cite{lambiotte-louvain-clustering} (\Cref{eq:blondel-deltaQ-simplified}), for the special case when $C_a = \{v_i\}$.
+  Note that the modularity contribution $Q_c = 0$ for an empty cluster.
+
+  This modularity gain of course is not restricted to the Louvain method in and of itself, it applies to all clustering methods and is relevant to those that operate on modularity.
 
   Louvain is among the most widely used techniques for graph clustering and is available in numerous software packages.
 
