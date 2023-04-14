@@ -44,8 +44,9 @@
 % Insert a few pictures from references maybe
 % Try out Simulated Annealing? (Fortunato) -- works really well (cf. Fortunato Table 1)
 % in the introduction, mention all the methods described by Fortunato et al. (lots of text)
-% derive the modularity gain described in the Louvain paper
+% ✅ derive the modularity gain described in the Louvain paper
 % analyze / mention: is the network small-world or not?
+% use / plot https://www.mapequation.org/infomap/
 
 \begin{document}
   \pagestyle{plain}
@@ -66,6 +67,7 @@
 
   \begin{figure}[H]
     \centering
+    \includegraphics[width=0.9\linewidth]{figures/H-4-louvain.pdf}
     \caption{Add some sort of graph plot here.}
   \end{figure}
 
@@ -132,6 +134,12 @@
   Modularity is a measure of the quality of a clustering (also referred to as a partitioning) of $G$. It can also be written as the sum of individual cluster contributions
   $$Q = \sum_{c=1}^{n_C} Q_c = \frac{1}{2m} \sum_{c=1}^{n_C} \left[\sum_{v_i \in C_c} \sum_{v_j \in C_c} \left(A_{ij} - \frac{d_i d_j}{2m}\right)\right]\,,$$
   which might make its purpose a bit clearer.
+
+  \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{figures/nice-modularity.eps}
+    \caption{Bla bla todo \parencite{mapequation}.}
+  \end{figure}
 
   \section{Clustering Methods and Algorithms}
   In order to find ...
@@ -272,6 +280,9 @@ end
 
   \subsection{Watset}
   A more recent work \cite{watset} describes a meta-algorithm for graph clustering in the context of Natural Language Processing, which can be based on Chinese Whispers and also other methods.
+
+  \subsection{Map Equation}
+  The map equation.
 
   \subsection{Spectral Clustering Methods}
   % very good resource: https://theory.epfl.ch/vishnoi/Lxb-Web.pdf
