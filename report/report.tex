@@ -47,6 +47,7 @@
 % ✅ derive the modularity gain described in the Louvain paper
 % analyze / mention: is the network small-world or not?
 % use / plot https://www.mapequation.org/infomap/
+% analyze the Eigengap which tells the amount of clusters
 
 \begin{document}
   \pagestyle{plain}
@@ -74,8 +75,8 @@
   \pagebreak
   \pagestyle{normal}
 
-  % \tableofcontents
-  % \pagebreak
+  \tableofcontents
+  \pagebreak
 
   \section{Motivation}
   For non-periodic problem settings, \chebyshev series are a fantastic choice \parencite{cw-biemann}.
@@ -172,8 +173,9 @@
   Note that here we only consider an unweighted, undirected graph, while most clustering algorithms also allow working with a weighted graph $\tilde{G} = (V, \tilde{E})$ where $\tilde{E} \subset V \times V \times \R^+$ is a set of three-tuples $(v_i, v_j, w_{ij})$ instead of vertex pairs. Or equivalently, one can define a function $w: \tilde{E} \mapsto \R^+$ which maps vertex pairs (edges) to their respective weight.
 
   \subsection{Embeddings}
-  Cosine-Similarity
-  $$\rho_{ij} = \arccos\left(\frac{\vec{a_i} \vec{a_j}}{\norm{\vec{a_i}}_2 \cdot \norm{\vec{a_j}}}_2\right)$$
+  Given a graph embedding, in which vertices are mapped to a point in $\R^n$, a frequently used measure of similarity is \textit{Cosine-Similarity}:
+  $$\rho_{ij} = \arccos\left(\frac{\vec{a_i} \vec{a_j}}{\norm{\vec{a_i}}_2 \cdot \norm{\vec{a_j}}}_2\right)\,,$$
+  where vectors $\vec{a_i}, \vec{a_j} \in \R^n$ denote the point corresponding to vertex $v_i, v_j$ respectively.
 
   \subsection{Girvan-Newman}
   The clustering method deduced in \cite{girvan-newman} was a clear revolution at the time and brought graph clustering / community detection methods closer to practicians.
@@ -278,8 +280,9 @@ end
     \end{tblr}
   \end{table}
 
-  \subsection{Watset}
-  A more recent work \cite{watset} describes a meta-algorithm for graph clustering in the context of Natural Language Processing, which can be based on Chinese Whispers and also other methods.
+  A more recent work \cite{watset} describes a meta-algorithm for graph clustering in the context of Natural Language Processing, which can be based on Chinese Whispers and also other methods (hence the term 'meta').
+  Their algorithm (\texttt{WATSET}) is designed for \textit{fuzzy} graph clustering which exceeds the scope of this special topic, but represents the state of the art in graph-based applications in Natural Language Processing.
+  Fuzzy clustering algorithms are capable of producing \textit{soft} clusterings, which relax the requirement that all clusters are strictly disjoint (so $C_i \cap C_j = \{\} \; \forall\,i, j$, as introduced in \Cref{def:clustering}).
 
   \subsection{Map Equation}
   The map equation.
@@ -295,16 +298,39 @@ end
   We shall also remove the 2000 most frequent words
 
   \section{Results}
-  An itemize with some semantic field clusters we found
+  An itemize with some semantic field clusters we found.
+  Girvan Newman did not converge within a day, and if it had it would have only been a bipartition.
+
+  \begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{figures/spectrum-of-laplacian.pdf}
+    \caption{Histogram of the eigenvalue spectrum of the Laplacian $L = D - A$ of the graph $G_4$.}
+  \end{figure}
 
   \begin{table}
     \centering
+    \caption{Clustering results for $G_4$.}
     \begin{tblr}{lrrrr}
       \hline
       Method & Modularity & Runtime [s] & $n_C$ & Average size & Max size \\
       \hline
       louvain & 0.1307 & 25.091 & 9 & 1204.78 & 4066. \\
-      chinese-whispers & 0.0168 & 126.342 & 1929 & 5.62 & 39.
+      chinese-whispers & 0.0168 & 126.342 & 1929 & 5.62 & 39. \\
+      greedy-modularity & 0.1150 & 1993.632 & 39 & 278.03 & 4836.
+    \end{tblr}
+  \end{table}
+
+  \begin{table}
+    \centering
+    \caption{Clustering results for Zachary's Karate Club Graph \parencite{karate-club}.}
+    \begin{tblr}{lrrrr}
+      \hline
+      Method & Modularity & Runtime [s] & $n_C$ & Average size & Max size \\
+      \hline
+      greedy-modularity & 0.4110 & 0.006 & 3 & 11.33. & 17. \\
+      girvan-newman & 0.3477 & 0.145 & 2 & 17.00. & 19. \\
+      louvain & 0.4439 & 0.002 & 4 & 8.50. & 14. \\
+      chinese-whispers & 0.3920 & 0.004 & 7 & 4.86. & 11.
     \end{tblr}
   \end{table}
 
@@ -337,6 +363,8 @@ end
   \pagebreak
   \section{Discussion and Outlook}
   Bla
+
+  As the author describes in \cite{cw-biemann}, Chinese Whispers generally produces a fairly high number of clusters as compared to other methods, which one may circumvent by adjusting either the convergence condition or introduce a minimum cluster size through minor adjustments of the algorithm.
 
   \pagebreak
   \printbibliography
