@@ -32,7 +32,7 @@
 \newcommand{\heatfun}{\textcolor{themecolor3}{HeatFun}\xspace}
 \newcommand{\identity}{\mathbbm{1}}
 
-\newcommand{\topictitle}{Unsupervised Semantic Field Analysis \\ \large by methods from community detection}
+\newcommand{\topictitle}{Unsupervised Semantic Field Analysis \\ \large using Community Detection Methods}
 \newcommand{\candidatenumber}{1072462}
 \newcommand{\course}{Networks}
 
@@ -41,13 +41,13 @@
 \date{\today}
 
 % ✅ Prepare report
-% Insert a few pictures from references maybe
-% Try out Simulated Annealing? (Fortunato) -- works really well (cf. Fortunato Table 1)
-% in the introduction, mention all the methods described by Fortunato et al. (lots of text)
+% ✅ Insert a few pictures from references maybe
+% ✅ in the introduction, mention all the methods described by Fortunato et al. (lots of text)
 % ✅ derive the modularity gain described in the Louvain paper
+% ✅ use / plot https://www.mapequation.org/infomap/
+% ✅ analyze the Eigengap which tells the amount of clusters
+% Try out Simulated Annealing? (Fortunato) -- works really well (cf. Fortunato Table 1)
 % analyze / mention: is the network small-world or not?
-% use / plot https://www.mapequation.org/infomap/
-% analyze the Eigengap which tells the amount of clusters
 
 \begin{document}
   \pagestyle{plain}
@@ -68,8 +68,9 @@
 
   \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{figures/H-4-louvain.pdf}
-    \caption{Add some sort of graph plot here.}
+    \includegraphics[width=0.8\linewidth]{figures/library-graph-12.pajek.ftree.pdf}
+    \caption{Visualisations of a clustering of the corpus generated semantic network $G_8$, obtained using the Map Equation approach (cf. \Cref{sec:mapequation}). Visualised using the InfoMap visualisation package \parencite{mapequation}.}
+    \label{fig:mapequation}
   \end{figure}
 
   \pagebreak
@@ -79,8 +80,6 @@
   \pagebreak
 
   \section{Motivation}
-  For non-periodic problem settings, \chebyshev series are a fantastic choice \parencite{cw-biemann}.
-
   In the context of Natural Language Processing, graph clustering methods can also be employed for various other tasks such as word sense induction or language separation.
   In this work however, we will only focus on semantic field tagging.
 
@@ -95,8 +94,8 @@
     A graph $G = (V, E)$ with vertices $V$ and edges $E \subseteq V \times V$ is undirected if and only if $(v_i, v_j) \in E \Rightarrow (v_j, v_i) \in E \quad \forall\; v_i, v_j \in V$.
   \end{definition}
 
-  Vertices are also often referred to as \textit{nodes}.
-  Every graph $G$ is uniquely described by its adjacency matrix $A \in \{0, 1\}^{n \times n}$ (\Cref{def:adjacency-matrix}), which allows us to talk about ``linear algebra'' of graphs.
+  Vertices are also referred to as \textit{nodes}.
+  Every graph $G$ is uniquely described by its adjacency matrix $A \in \{0, 1\}^{n \times n}$ (\Cref{def:adjacency-matrix}), which allows us to talk about ``linear algebra'' of graphs, which is especially relevant to spectral graph clustering methods (cf. \Cref{sec:spectral-clustering}).
 
   \begin{definition}{Adjacency Matrix}{adjacency-matrix}
     Let $A \in \{0, 1\}^{n \times n}$ denote the symmetric adjacency matrix of an undirected graph $G = (V, E)$. Its entries are given by $a_{ij} = \{A\}_{ij} = \identity_{(v_i, v_j) \in E}$, so $a_{ij} = 1$ if vertex $v_i$ is connected to $v_j$ and $0$ otherwise.
@@ -111,7 +110,6 @@
   \end{lemma}
 
   The individual vertex degrees can be summarised in the so-called \textit{degree matrix} $D := \diag(d_1, ..., d_n)$, $D \in \N_0^{n \times n}$. The graph \textit{Laplacian} is defined by $L := D - A$.
-  % TODO: need this matrix? If yes, use proper (big) definition.
 
   Given a graph, we are interested in performing \textbf{graph clustering}, also referred to as \textbf{community detection} or \textbf{graph partitioning}, the goal of which is to obtain a set of mutually exclusive clusters $C_i \subseteq V$ (cf. \Cref{def:clustering}).
   The term \textit{graph partitioning} is more frequently used in the context of minimal cuts, where one aims to minimise each \textit{cut size} referring to the number of edges in between clusters.
@@ -139,7 +137,7 @@
   \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\linewidth]{figures/nice-modularity.eps}
-    \caption{Bla bla todo \parencite{mapequation}.}
+    \caption{Four clustered graphs along with their modularity $Q$ (and map equation value $L$, cf. \cite{mapequation}) to provide a visual illustration of modularity.}
   \end{figure}
 
   \section{Clustering Methods and Algorithms}
@@ -172,16 +170,7 @@
 
   Note that here we only consider an unweighted, undirected graph, while most clustering algorithms also allow working with a weighted graph $\tilde{G} = (V, \tilde{E})$ where $\tilde{E} \subset V \times V \times \R^+$ is a set of three-tuples $(v_i, v_j, w_{ij})$ instead of vertex pairs. Or equivalently, one can define a function $w: \tilde{E} \mapsto \R^+$ which maps vertex pairs (edges) to their respective weight.
 
-  \subsection{Embeddings}
-  Given a graph embedding, in which vertices are mapped to a point in $\R^n$, a frequently used measure of similarity is \textit{Cosine-Similarity}:
-  $$\rho_{ij} = \arccos\left(\frac{\vec{a_i} \vec{a_j}}{\norm{\vec{a_i}}_2 \cdot \norm{\vec{a_j}}}_2\right)\,,$$
-  where vectors $\vec{a_i}, \vec{a_j} \in \R^n$ denote the point corresponding to vertex $v_i, v_j$ respectively.
-
-  \subsection{Girvan-Newman}
-  The clustering method deduced in \cite{girvan-newman} was a clear revolution at the time and brought graph clustering / community detection methods closer to practicians.
-  Optimises centrality and betweenness.
-
-  \subsection{Louvain}
+  \subsection{The Louvain Method}
   The popular algorithm introduced by \cite{lambiotte-louvain-clustering} is based on modularity optimisation (cf. \Cref{def:modularity}) and has computational complexity of only $\mathcal{O}(m)$.
   It is referred to as the \textit{Louvain method} named after the University of Louvain in Belgium, alma mater of the first author.
   The Louvain method is divided into two phases: Phase One (local optimisation) and Phase Two (merging of vertices).
@@ -231,8 +220,6 @@
 
   Louvain is among the most widely used techniques for graph clustering and is available in numerous software packages.
 
-  % https://en.wikipedia.org/wiki/Louvain_method
-
   \subsection{Chinese Whispers}
   This method, like the Louvain method, also initialises the algorithm by assigning each vertex its own category (cluster).
 
@@ -242,21 +229,24 @@ Output: a graph clustering $C = \{C_i\}_{i=1, ..., n_C}$ into $n_C$ classes.
 
 Initialise with $n_C = n$ classes, one per vertex.
 while there are changes, do
-  for $v_i$ in shuffle($V$), do
-    Set $s_i = 3$
+  for $v_i$ in shuffled($V$), do
+    Set $s_i = \arg\max_{j} \big|\left\{(v_k, v_l) \in E \;|\; v_k = v_i \wedge v_l \in C_j\right\}\big|$.
   end
 end
   \end{algorithm}
 
-  Corresponds to an agent-based simulation of a social network \cite{cw-biemann}.
+  It works
+
+  This algorithm can be thought of as an agent-based simulation of a social network \cite{cw-biemann}.
   Similar to Markov-Chain-Clustering \cite{van-dongen}, \cite{fortunato}.
 
   The algorithm may equivalently be defined by considering the \textit{class matrix} $\mathcal{D} \in \{0, 1\}^{n \times n_C}$ of a graph $G = (V, E)$ in which rows represent nodes and columns represent clusters $C_j \in C$.
   So $G_{ij} = 1$ if $v_i$ belongs to $C_j$ and $0$ otherwise.
   The algorithm operates iteratively and updates the class matrix $\mathcal{D}^{(k)}$ using
-  $$M: \{0, 1\}^{n \times n_C} \mapsto \{0, 1\}^{n \times n_C}, \quad \{M(\mathcal{D})\}_{ij} = \mathcal{D}_{ij}$$ % TODO: this is not great
+  $$M: \{0, 1\}^{n \times n_C} \mapsto \{0, 1\}^{n \times n_C}, \quad \{M(\mathcal{D})\}_{ij} = \delta_{j,\arg\max_{k\in \{0...n_C\}} \mathcal{D}_{ik}}\,,$$
   $$\mathcal{D}^{(k+1)} = M(\mathcal{D}^{(k)}) A, \quad k = 0, 1, 2, ..., N$$
   per iteration $k$, where $\mathcal{D}^{(0)} = I$ is the identity, corresponding to the initialisation of individual classes for each vertex.
+  $M$ is a row-wise operation on its argument, which sets each entry in the row to zero except the (first appearing) largest one, which it sets to one.
 
   The paper also discusses acquisition of word classes (semantic fields), where they ran Chinese Whispers against the British National Corpus (BNC) to identify clusters of similar words.
   In order to improve performance, they cut off the 2000 most frequent words in the corpus which we will also employ.
@@ -284,91 +274,133 @@ end
   Their algorithm (\texttt{WATSET}) is designed for \textit{fuzzy} graph clustering which exceeds the scope of this special topic, but represents the state of the art in graph-based applications in Natural Language Processing.
   Fuzzy clustering algorithms are capable of producing \textit{soft} clusterings, which relax the requirement that all clusters are strictly disjoint (so $C_i \cap C_j = \{\} \; \forall\,i, j$, as introduced in \Cref{def:clustering}).
 
-  \subsection{Map Equation}
-  The map equation.
+  \subsection{Greedy Modularity}
+  This modularity-optimisation based clustering method takes a very similar route to the Louvain method \cite{clauset-greedy-modularity}.
 
-  \subsection{Spectral Clustering Methods}
+  \subsection{Further Approaches}
+  \subsubsection{Embeddings}
+  Given a graph embedding, in which vertices are mapped to a point in $\R^n$, a frequently used measure of similarity is \textit{Cosine-Similarity}:
+  $$\rho_{ij} = \arccos\left(\frac{\vec{a_i} \vec{a_j}}{\norm{\vec{a_i}}_2 \cdot \norm{\vec{a_j}}}_2\right)\,,$$
+  where vectors $\vec{a_i}, \vec{a_j} \in \R^n$ denote the point corresponding to vertex $v_i, v_j$ respectively \parencite{fortunato}.
+  Of course this is not quite as connected to the other methods given that it already assumes a full embedding which itself is a very involved procedure, in many instances similar to clustering methods.
+
+  \subsubsection{Girvan-Newman}
+  The clustering method deduced in \cite{girvan-newman} was a clear revolution at the time and brought graph clustering / community detection methods closer to practicians.
+  It consists of multiple iterations which will each increase the number of clusters, and in between iterations optimises centrality and betweenness.
+
+  \subsubsection{Map Equation}
+  \label{sec:mapequation}
+  The map equation. See also \Cref{fig:mapequation}.
+
+  \subsubsection{Spectral Clustering Methods}
+  \label{sec:spectral-clustering}
   % very good resource: https://theory.epfl.ch/vishnoi/Lxb-Web.pdf
   \cite{fortunato}.
 
-  \subsection{Fiedler}
-  \cite{fortunato}.
+  \section{Network Generation and Results}
+  The text corpus and vocabulary database used for the analysis in this report is based on the database behind the \href{https://www.latin-is-simple.com/en/library/}{Latin is Simple Library} which is in the public domain.
+  In order to avoid incorporating too many grammatical particles / utility words, according to common practice \parencite{cw-biemann}, we have removed the 2000 most frequent words from the dataset.
 
-  \section{Method}
-  We shall also remove the 2000 most frequent words
+  \begin{itemize}
+    \item $G_4$
+    \item $G_8$
+    \item $G_{12}$
+  \end{itemize}
 
-  \section{Results}
-  An itemize with some semantic field clusters we found.
   Girvan Newman did not converge within a day, and if it had it would have only been a bipartition.
 
-  \begin{figure}
+  \begin{table}[H]
     \centering
-    \includegraphics[width=\linewidth]{figures/spectrum-of-laplacian.pdf}
-    \caption{Histogram of the eigenvalue spectrum of the Laplacian $L = D - A$ of the graph $G_4$.}
-  \end{figure}
-
-  \begin{table}
-    \centering
-    \caption{Clustering results for $G_4$.}
-    \begin{tblr}{lrrrr}
+    \caption{Clustering results for the corpus-generated semantic networks $G_4$, $G_8$ and $G_{12}$.}
+    \begin{tblr}{rlrrrr}
       \hline
-      Method & Modularity & Runtime [s] & $n_C$ & Average size & Max size \\
+      Graph & Method & $Q$ & Runtime [s] & $n_C$ & Avg. size & Max size \\
       \hline
-      louvain & 0.1307 & 25.091 & 9 & 1204.78 & 4066. \\
-      chinese-whispers & 0.0168 & 126.342 & 1929 & 5.62 & 39. \\
-      greedy-modularity & 0.1150 & 1993.632 & 39 & 278.03 & 4836.
+      $G_4$ & louvain & 0.1307 & 25.091 & 9 & 1204.78 & 4066 \\
+      $G_4$ & chinese-whispers & 0.0168 & 126.342 & 1929 & 5.62 & 39 \\
+      $G_4$ & greedy-modularity & 0.1150 & 1993.632 & 39 & 278.03 & 4836 \\
+      $G_8$ & louvain & 0.1189 & 58.373 & 5 & 2168.60 & 3748 \\
+      $G_8$ & chinese-whispers & 0.0142 & 179.585 & 1625 & 6.67 & 43 \\
+      $G_8$ & greedy-modularity & 0.1074 & 2211.958 & 25 & 433.72 & 5375 \\
+      $G_{12}$ & louvain & 0.1150 & 43.723 & 4 & 2710.75 & 3465 \\
+      $G_{12}$ & chinese-whispers & 0.0011 & 242.934 & 365 & 29.71 & 9778
     \end{tblr}
   \end{table}
 
-  \begin{table}
+  \begin{table}[H]
     \centering
     \caption{Clustering results for Zachary's Karate Club Graph \parencite{karate-club}.}
     \begin{tblr}{lrrrr}
       \hline
-      Method & Modularity & Runtime [s] & $n_C$ & Average size & Max size \\
+      Method & $Q$ & Runtime [s] & $n_C$ & Avg. size & Max size \\
       \hline
-      greedy-modularity & 0.4110 & 0.006 & 3 & 11.33. & 17. \\
-      girvan-newman & 0.3477 & 0.145 & 2 & 17.00. & 19. \\
-      louvain & 0.4439 & 0.002 & 4 & 8.50. & 14. \\
-      chinese-whispers & 0.3920 & 0.004 & 7 & 4.86. & 11.
+      greedy-modularity & 0.4110 & 0.006 & 3 & 11.33 & 17 \\
+      girvan-newman & 0.3477 & 0.145 & 2 & 17.00 & 19 \\
+      louvain & 0.4439 & 0.002 & 4 & 8.50 & 14 \\
+      chinese-whispers & 0.3920 & 0.004 & 7 & 4.86 & 11
     \end{tblr}
   \end{table}
 
   \begin{table}
     \centering
-    \caption{Results ordered by size.}
+    \caption{Some resulting clusters in $G_4$, extracted using the Chinese Whispers clustering method.}
     \begin{tblr}{colspec={ X[c] X[4,j,m] }}
       \hline
       Size $|C_i|$ & Sample Words                                                                            \\
       \hline
-      18432        & secret, officials, transport, unemployment, farm, county, wood, procedure, grounds, ... \\
-      3            & torture, executioner, butchering,
+      4 & conterritus (frightened), minitabundus (threatening), infensus (hostile), properus (quick) \\
+      6 & hibernus (wintry), tardus (slow), upilio (shepherd), formosus (beautiful), hibernum (winter camp (pl.)), subulcus (swineherd) \\
+      4 & fraus (deceit), fraus (fraud), infitiatio (denial), furtum (theft) \\
+      6 & fraxinus (ash-tree), laurea (laurel/bay tree), fraxinus (of ash), corylus (hazel-tree), edurus (very hard), abies (fir tree/wood) \\
+      4 & vicina (neighbor), vicinus (nearby), vicinus (neighbor), vicinum (neighborhood) \\
+      7 & repens (sudden), susurro (whisperer), nutrix (nurse), susurrus (whispering), immanitas (brutality), susurrus (whisper), diritas (frightfulness) \\
+      8 & Aegyptius (Egyptian), Aethiopia (Ethiopia), siccitas (dryness), Aegyptus (Egypt), desertum (desert), Aegyptius (Egyptian), aspis (asp), Arabia (Arabia) \\
+      8 & Marius (Marius), Maria (Mary), caelia (kind of beer), citrum (wood of citron tree), alternatus (alternate), citrus (African citrus tree), series (row), citrus (lemon tree) \\
+      6 & inexspectatus (invincible), armum (arms (pl.)), tribunicius (of/belonging to tribune), intutus (defenseless), Arma (Arms), arma (weapons) \\
+      2 & globosus (round), rotundus (round)
     \end{tblr}
   \end{table}
 
   \begin{figure}
     \centering
-    \includegraphics[width=0.9\linewidth]{figures/H-4-louvain.pdf}
-    \caption{Plotty plot}
+    \begin{subfigure}[b]{0.3\textwidth}
+      \centering
+      \includegraphics[width=\textwidth]{figures/H-4-louvain.pdf}
+      \caption{Clusters of $G_4$.}
+      \label{fig:h-4}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.3\textwidth}
+      \centering
+      \includegraphics[width=\textwidth]{figures/H-8-louvain.pdf}
+      \caption{Clusters of $G_8$.}
+      \label{fig:h-8}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.3\textwidth}
+      \centering
+      \includegraphics[width=\textwidth]{figures/H-12-louvain.pdf}
+      \caption{Clusters of $G_{12}$.}
+      \label{fig:h-12}
+    \end{subfigure}
+    \caption{Using the Louvain method. Clusters of $G_4$ are depicted in \Cref{fig:h-4}.}
+    \label{fig:three graphs}
   \end{figure}
 
   Apply to Karate Club
 
-  Computational complexity table from \cite{watset}, also referencing complexity section above. Fortunato also has complexities.
+  \begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{figures/spectrum-of-laplacian.pdf}
+    \caption{Histogram of the eigenvalue spectrum of the Graph Laplacian $L = D - A$ of $G_4$.}
+  \end{figure}
 
-  \section{Author analysis?}
-  Authors whose works circulate around these semantic fields:
-  bla bla, maybe not that interesting
+  Computational complexity table from \cite{watset}, also referencing complexity section above. Fortunato also has complexities.
 
   \pagebreak
   \section{Discussion and Outlook}
-  Bla
-
   As the author describes in \cite{cw-biemann}, Chinese Whispers generally produces a fairly high number of clusters as compared to other methods, which one may circumvent by adjusting either the convergence condition or introduce a minimum cluster size through minor adjustments of the algorithm.
 
   \pagebreak
   \printbibliography
-
-  \appendix
-  \section{Appendix Things?}
 \end{document}
