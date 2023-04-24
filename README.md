@@ -3,6 +3,8 @@
 A Special Topic in Networks on how to use Graph Clustering algorithms to perform semantic field tagging.  
 The report is available [here](https://raw.githubusercontent.com/MrP01/SemanticFieldAnalysis/master/report/report.pdf)!
 
+![Clusters](https://i.imgur.com/1bj0gDz.png)
+
 Here are some of the resulting semantic fields:
 
 - conterritus (frightened), minitabundus (threatening), infensus (hostile), properus (quick)
@@ -25,8 +27,6 @@ constructed large networks G4, G8 and G12 from an original classicist Latin lite
 corpus and applied the abovementioned methods to cluster them. The constructed
 graphs’ vertices only represent principal words, so the text corpus was analyzed up to
 grammatical equivalences in the Latin language which is entirely original.
-
-![Clusters](https://i.imgur.com/1bj0gDz.png)
 
 We then analyzed three clustering methods from a computational perspective with
 results presented in Table 2, Table 4 and visualised in Figure 5. The Louvain method
