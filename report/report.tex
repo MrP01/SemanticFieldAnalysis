@@ -26,10 +26,9 @@
 \AfterEndEnvironment{minted}{\vspace*{-0.8cm}}
 \renewcommand{\operatorcolor}{black}
 
-\newcommand{\chebyshev}{Chebyshev\xspace}
-\newcommand{\tschebfun}{\textcolor{themecolor3}{TschebFun}\xspace}
-\newcommand{\heatfun}{\textcolor{themecolor3}{HeatFun}\xspace}
 \newcommand{\identity}{\mathbbm{1}}
+\let\oldemptyset\emptyset
+\let\emptyset\varnothing
 
 \newcommand{\topictitle}{Unsupervised Semantic Field Analysis \\ \large using Community Detection Methods}
 \newcommand{\candidatenumber}{1072462}
@@ -447,7 +446,7 @@ end
 
   As the author describes in \cite{cw-biemann}, Chinese Whispers generally produces a fairly high number of clusters as compared to other methods, which one may circumvent by adjusting either the convergence condition or introduce a minimum cluster size through minor adjustments of the algorithm.
   Similar measures may be taken for the other algorithms.
-  In our case however, the clusters produced make a reasonable impression.
+  In our case however, the clusters produced make a reasonable impression when looking at the words contained therein.
 
   Even better results for the semantic fields could be achieved by incorporating an even larger text corpus to prevent clustering of words which are only used once or twice, so only in the context given by the literature.
 
