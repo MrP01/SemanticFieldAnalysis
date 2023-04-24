@@ -47,6 +47,7 @@
 % ✅ analyze the Eigengap which tells the amount of clusters
 % Try out Simulated Annealing? (Fortunato) -- works really well (cf. Fortunato Table 1)
 % analyze / mention: is the network small-world or not?
+% maybe cite Lambiotte's book
 
 \begin{document}
   \pagestyle{plain}
@@ -172,6 +173,7 @@
   Note that here we only consider an unweighted, undirected graph, while most clustering algorithms also allow working with a weighted graph $\tilde{G} = (V, \tilde{E})$ where $\tilde{E} \subset V \times V \times \R^+$ is a set of three-tuples $(v_i, v_j, w_{ij})$ instead of vertex pairs. Or equivalently, one can define a function $w: \tilde{E} \mapsto \R^+$ which maps vertex pairs (edges) to their respective weight.
 
   \subsection{The Louvain Method}
+  \label{sec:louvain}
   The popular algorithm introduced in \cite{lambiotte-louvain-clustering} is based on modularity optimisation (cf. \Cref{def:modularity}) and has computational complexity of only $\mathcal{O}(m)$.
   It is referred to as the \textit{Louvain method} named after the University of Louvain in Belgium, alma mater of the first author.
   The Louvain method is divided into two phases: Phase One (local optimisation) and Phase Two (merging of vertices) and they are repeated until modularity stops increasing \parencite{lambiotte-louvain-clustering}.
@@ -218,9 +220,10 @@
 
   This modularity gain of course is not restricted to the Louvain method in and of itself, it applies to all clustering methods and is relevant to those that operate on modularity.
 
-  Louvain is among the most widely used techniques for graph clustering and is available in numerous software packages.
+  The Louvain algorithm is among the most widely used techniques for graph clustering and is available in numerous software packages.
 
   \subsection{Chinese Whispers}
+  \label{sec:cw}
   This method, like the Louvain method, also initialises the algorithm by assigning each vertex its own category (cluster).
 
   \begin{algorithm}[language=pseudo, caption={\centering The \textit{Chinese Whispers} algorithm due to \cite{cw-biemann}}]
@@ -327,14 +330,24 @@ end
       $G_{12}$ & chinese-whispers & 0.0011 & 242.934 & 365 & 29.71 & 9778 \\
       $G_{12}$ & greedy-modularity & 0.1033 & 2324.660 & 12 & 903.58 & 5520
     \end{tblr}
+    \label{table:timings}
   \end{table}
 
+  \Cref{table:timings} shows the individual runtimes of each algorithm on graphs $G_4$, $G_8$ and $G_{12}$, along with the resulting modularity $Q$ of a clustering into $n_C$ clusters with average and maximum size given in the table as well.
   For graphs of this size, Girvan-Newman did not converge within a day, not even for the first iteration which would have only yielded a bipartition of the graph.
+  From \Cref{table:timings}, one can clearly see that the Louvain method is not only the fastest but also yields the highest modularity $Q$, which is perhaps unsurprising given that it is based on optimisation of $Q$.
+  However, it yields a very small number of very heterogeneously sized clusters which is not necessarily ideal for the application of semantic field analysis.
+
+  Followed closely after it, we have the Greedy Modularity method which also yields a fairly high modularity (slightly higher than 0.1), but has runtime of about half an hour, which is much longer than the runtime of Louvain which is on the order of seconds.
+  This comparison may put the fantastic performance improvement of the Louvain method into perspective, given that it is based on the Greedy Modularity method.
+
+  The runner-up in terms of runtime is the Chinese Whispers algorithm which takes only a few minutes, but yields a very poor modularity $Q$.
+  However, Chinese Whispers returns the most usable semantic fields which are of average size 6 for $G_4$ and $G_8$ and comprise around 30 words for $G_{12}$. Samples of the resulting semantic fields may be found in \Cref{table:samples}.
 
   \begin{table}[H]
     \centering
     \caption{Clustering results for Zachary's Karate Club Graph \parencite{karate-club}.}
-    \begin{tblr}{rlcrrrr}
+    \begin{tblr}{lcrrrr}
       \hline
       Method & $Q$ & Runtime [s] & $n_C$ & Avg. size & Max size \\
       \hline
@@ -343,11 +356,15 @@ end
       louvain & 0.4439 & 0.002 & 4 & 8.50 & 14 \\
       chinese-whispers & 0.3920 & 0.004 & 7 & 4.86 & 11
     \end{tblr}
+    \label{table:karate}
   \end{table}
+
+  For reference, we also applied each algorithm to the standard Zachary's Karate Club graph with runtimes, modularities and cluster sizes available in \Cref{table:karate}.
+  The interested reader may find further runtime analysis tables and computational complexities in \cite{watset} as well as \cite{fortunato}.
 
   \begin{table}
     \centering
-    \caption{Some resulting clusters in $G_4$, extracted using the Chinese Whispers clustering method.}
+    \caption{Some resulting clusters (semantic fields) in $G_4$, the network of words whose edges correspond to distances of at most 4 words from one another in the Latin text corpus, extracted using the Chinese Whispers clustering method.}
     \begin{tblr}{colspec={ X[c] X[4,j,m] }}
       \hline
       Size $|C_i|$ & Sample Words                                                                            \\
@@ -363,6 +380,7 @@ end
       6 & inexspectatus (invincible), armum (arms (pl.)), tribunicius (of/belonging to tribune), intutus (defenseless), Arma (Arms), arma (weapons) \\
       2 & globosus (round), rotundus (round)
     \end{tblr}
+    \label{table:samples}
   \end{table}
 
   \begin{figure}
@@ -387,23 +405,38 @@ end
       \caption{Clusters of $G_{12}$.}
       \label{fig:h-12}
     \end{subfigure}
-    \caption{Using the Louvain method. Clusters of $G_4$ are depicted in \Cref{fig:h-4}.}
+    \caption{The weighted graphs of clusters and their number of inter-cluster edges connecting them for $G_4$, $G_8$ and $G_{12}$, as obtained by the Louvain method. The graphs shown also contain edges from vertices (representing clusters) back to themselves (i.e. diagonal entries in the adjacency matrix) which represent the number of edges within the corresponding cluster.}
     \label{fig:three graphs}
   \end{figure}
 
-  Apply to Karate Club
+  The clusters obtained by the Louvain method are depicted in \Cref{fig:three graphs}, using a similar visualisation method as InfoMap \Cref{fig:mapequation}.
+  The semantic connectedness of the Louvain clusters is not immediately apparent due to the large size of the clusters.
 
   \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth]{figures/spectrum-of-laplacian.pdf}
-    \caption{Histogram of the eigenvalue spectrum of the graph Laplacian $L = D - A$ of $G_4$.}
+    \caption{From left to right: Histograms of the eigenvalue spectrum of the graph Laplacians $L = D - A$ of $G_4$, $G_8$ and $G_{12}$, respectively.}
+    \label{fig:laplacians}
   \end{figure}
 
-  Computational complexity table from \cite{watset}, also referencing complexity section above. Fortunato also has complexities.
+  \Cref{fig:laplacians} depicts a histogram of the spectra of the graph Laplacians $L$ for the given three graphs.
+  From here, one can make conclusions about the expected number of clusters in the network. $G_4$, for instance, has a clear gap of eigenvalues around $\lambda = 2000$, which suggests a partitioning into about 2000 clusters of $G_4$. Chinese Whispers, a probabilistic algorithm, yields almost exactly that number (within a \SI{1}{\percent} error tolerance!).
+  A similar argument can be made for both modularity-optimisation methods upon closer inspection of the spectrum, although by far not as clearly.
+  The graphs $G_8$ and $G_{12}$ are far more connected than $G_4$ and therefore yield a lower number of clusters.
+  Which is expected, but not very easily visible in the eigenvalue spectrum.
 
   \pagebreak
   \section{Discussion and Outlook}
+  In this report, we have introduced a few basic notions of network theory, discussed in detail two graph clustering approaches, the Louvain method (cf. \Cref{sec:louvain}) where we rederived the gain in modularity upon clustering of an isolated vertex and Chinese Whispers (cf. \Cref{sec:cw}).
+  Using a neighbourhood-based approach with parameter $r$, we constructed large networks $G_4$, $G_8$ and $G_{12}$ from an original classicist Latin literature corpus.
+
+  We then analyzed three clustering methods from a computational perspective with results presented in \Cref{table:timings}, \Cref{table:samples} and visualised in \Cref{fig:three graphs}.
+  The Louvain method was by far the fastest algorithm for our application.
+  The eigengap of the spectrum of the Laplacian then yielded a good estimate for the expected number of clusters.
+
   As the author describes in \cite{cw-biemann}, Chinese Whispers generally produces a fairly high number of clusters as compared to other methods, which one may circumvent by adjusting either the convergence condition or introduce a minimum cluster size through minor adjustments of the algorithm.
+  Similar measures may be taken for the other algorithms.
+  In our case however, the clusters produced make a reasonable impression.
 
   \pagebreak
   \printbibliography
