@@ -63,7 +63,7 @@
 
   \begin{abstract}
     \label{abstract}
-    In this work we will attempt to compare methods in the domain of semantic field tagging by considering a language corpus as a large graph of neighbouring words. The network is built by performing part-of-speech tagging iteratively on the entire corpus and linking together principal words that are connected in a neighbouring sense up to a radius of $r$ words.
+    In this work we will attempt to compare methods in the domain of semantic field tagging by considering a language literature corpus as a large graph of neighbouring words. The network is built by performing part-of-speech tagging iteratively on the entire corpus and linking together principal words that are connected in a neighbouring sense up to a radius of $r$ words.
     The resulting graph $G_r$ is then analysed using community detection methods such as \textit{Louvain Clustering}, \textit{Chinese Whispers}, \textit{Clauset Greedy Modularity} and other clustering approaches which we only discuss briefly.
     We derive the gain in modularity presented in the original work \cite{lambiotte-louvain-clustering} upon atomic modification of the clusters $\{C_i\}_{i=1}^{n_C}$.
     The Chinese Whispers algorithm is a simple graph clustering method originating from research in Natural Language Processing \parencite{cw-biemann} and it is well-established for semantic field analysis.
@@ -89,7 +89,7 @@
 
   The methods we will discuss to identify semantic fields will be based on graph clustering algorithms applied to a text corpus word connectedness / neighbourhood network $G_r$.
   As we will discuss later, different neighbourhood radii $r \in \N$ give us different insight into the structure of a natural language.
-  We will focus our attention on methods for undirected graphs, ``graphs without direction'' (cf. \Cref{def:undirected-graph}).
+  We will focus our attention on methods for undirected graphs, ``graphs without direction'' (cf. \Cref{def:undirected-graph}) and without loops.
   \begin{definition}{Undirected Graph}{undirected-graph}
     A graph $G = (V, E)$ with vertices $V$ and edges $E \subseteq V \times V$ is undirected if and only if $(v_i, v_j) \in E \Rightarrow (v_j, v_i) \in E \quad \forall\; v_i, v_j \in V$.
   \end{definition}
@@ -101,7 +101,7 @@
     Let $A \in \{0, 1\}^{n \times n}$ denote the symmetric adjacency matrix of an undirected graph $G = (V, E)$. Its entries are given by $a_{ij} = \{A\}_{ij} = \identity_{(v_i, v_j) \in E}$, so $a_{ij} = 1$ if vertex $v_i$ is connected to $v_j$ and $0$ otherwise.
   \end{definition}
 
-  By construction, $A = A^T$ is symmetric and has all-$0$s in the diagonal, a definition that corresponds to the fact that you cannot be friends with yourself in a social network.
+  By construction, $A = A^T$ is symmetric and has all-$0$s in the diagonal (no loops), a definition that corresponds to the fact that you cannot be friends with yourself in a social network.
 
   Further let $m := |E|$ and $n := |V|$ denote the number of edges and vertices, respectively.
   The degree $d_i$ of a vertex $v_i \in V$ is defined by the number of edges connecting to it, so $$d_i := \deg(v_i) = \big|\left\{(v_j, v_k) \in E \;|\; v_j = v_i\right\}\big|\,,$$ for an undirected graph $G = (V, E)$. The handshaking lemma (\Cref{lemma:handshaking}) tells us an important fact useful for normalisation.
@@ -114,8 +114,10 @@
   Given a graph, we are interested in performing \textbf{graph clustering}, also referred to as \textbf{community detection} or \textbf{graph partitioning}, the goal of which is to obtain a set of mutually exclusive clusters $C_i \subseteq V$ (cf. \Cref{def:clustering}).
   The term \textit{graph partitioning} is more frequently used in the context of minimal cuts, where one aims to minimise each \textit{cut size} referring to the number of edges in between clusters.
 
+  Note that in the scope of this report we only consider an unweighted, undirected graph, while most clustering algorithms also allow working with a weighted graph $\tilde{G} = (V, \tilde{E})$ where $\tilde{E} \subset V \times V \times \R^+$ is a set of three-tuples $(v_i, v_j, w_{ij})$ instead of vertex pairs. Or equivalently, one can define a function $w: \tilde{E} \mapsto \R^+$ which maps vertex pairs (edges) to their respective weight.
+
   \begin{definition}{Graph Clustering}{clustering}
-    Let $C = \left\{C_i \subseteq V \right\}_{i=1 ... n_C}$ denote a clustering of $G = (V, E)$ into $n_C \in \N$ clusters where $C_i \cap C_j = \{\} \; \forall\,i, j \in \{1, ..., n_C\}$ and $\bigcup_{i=1}^{n_C} C_i = V$. Let $s_i \in \{1, ..., n_C\}$ denote the assigned cluster of vertex $v_i \in V$.
+    Let $C = \left\{C_i \subseteq V \right\}_{i=1 ... n_C}$ denote a clustering of $G = (V, E)$ into $n_C \in \N$ clusters where $C_i \cap C_j = \emptyset \; \forall\,i, j \in \{1, ..., n_C\}$ and $\bigcup_{i=1}^{n_C} C_i = V$. Let $s_i \in \{1, ..., n_C\}$ denote the assigned cluster of vertex $v_i \in V$.
   \end{definition}
 
   \begin{figure}[h]
@@ -136,8 +138,8 @@
 
   \begin{figure}[H]
     \centering
-    \includegraphics[width=0.5\linewidth]{figures/nice-modularity.eps}
-    \caption{Four clustered graphs along with their modularity $Q$ (and map equation value $L$, cf. \cite{mapequation}) to provide a visual illustration of modularity.}
+    \includegraphics[width=0.56\linewidth]{figures/nice-modularity.eps}
+    \caption{Four clustered graphs along with their modularity $Q$ (and map equation value $L$, cf. \cite{mapequation} and \Cref{sec:mapequation}) to provide a visual illustration of modularity.}
   \end{figure}
 
   \section{Clustering Methods and Algorithms}
@@ -159,7 +161,7 @@
     \item EXPSPACE (Exponential space)
   \end{enumerate}
   computational complexity classes, sorted by the amount of problems contained in them (NL $\subseteq$ P $\subseteq$ NP $\subseteq$ PSPACE $\subseteq$ EXPTIME $\subseteq$ EXPSPACE).
-  A particularly interesting open problem is whether P = NP, one of the millennium prize problems and the most important open problem in computer science.
+  A particularly interesting open question is whether P = NP, one of the millennium prize problems and the most important open issue in computer science.
 
   \begin{definition}{NP-Hardness}{np-hard}
     A problem is referred to as \textit{NP-hard} if and only if it is at least as hard as the hardest problems in the complexity class NP (nondeterministic polynomial time). Formally written,
@@ -170,13 +172,12 @@
   Many community detection algorithms or problems relating to it are NP-hard \parencite{fortunato}.
   It is therefore often futile to employ exact algorithms as they quickly start to become infeasible for larger system sizes.
 
-  Note that here we only consider an unweighted, undirected graph, while most clustering algorithms also allow working with a weighted graph $\tilde{G} = (V, \tilde{E})$ where $\tilde{E} \subset V \times V \times \R^+$ is a set of three-tuples $(v_i, v_j, w_{ij})$ instead of vertex pairs. Or equivalently, one can define a function $w: \tilde{E} \mapsto \R^+$ which maps vertex pairs (edges) to their respective weight.
-
   \subsection{The Louvain Method}
   \label{sec:louvain}
-  The popular algorithm introduced in \cite{lambiotte-louvain-clustering} is based on modularity optimisation (cf. \Cref{def:modularity}) and has computational complexity of only $\mathcal{O}(m)$.
+  The algorithm introduced in \cite{lambiotte-louvain-clustering} is based on modularity optimisation (cf. \Cref{def:modularity}) and has computational complexity of only $\mathcal{O}(m)$ (recall that $m := |E|$).
   It is referred to as the \textit{Louvain method} named after the University of Louvain in Belgium, alma mater of the first author.
   The Louvain method is divided into two phases: Phase One (local optimisation) and Phase Two (merging of vertices) and they are repeated until modularity stops increasing \parencite{lambiotte-louvain-clustering}.
+  As \textit{modularity optimisation} suggests, each iteration aims to maximise the modularity $Q$ of the graph by moving each vertex to all of its neighbouring communities (clusters) and then choosing the change with the best improvement in $Q$.
 
   \begin{figure}[H]
     \centering
@@ -273,13 +274,15 @@ end
 
   A more recent work \cite{watset} describes a meta-algorithm for graph clustering in the context of Natural Language Processing, which can be based on Chinese Whispers and also other methods (hence the term 'meta').
   Their algorithm (\texttt{WATSET}) is designed for \textit{fuzzy} graph clustering which exceeds the scope of this special topic, but represents the state of the art in graph-based applications in Natural Language Processing.
-  Fuzzy clustering algorithms are capable of producing \textit{soft} clusterings, which relax the requirement that all clusters are strictly disjoint (so $C_i \cap C_j = \{\} \; \forall\,i, j$, as introduced in \Cref{def:clustering}).
+  Fuzzy clustering algorithms are capable of producing \textit{soft} clusterings, which relax the requirement that all clusters are strictly disjoint (so $C_i \cap C_j = \emptyset \; \forall\,i, j$, as introduced in \Cref{def:clustering}).
 
   \subsubsection{Greedy Modularity}
   This modularity-optimisation based clustering method takes a very similar route as the Louvain algorithm, which is in fact based on Clauset Greedy Modularity \parencite{clauset-greedy-modularity}.
   The general idea is again based on maximizing modularity.
 
   \subsection{Further Approaches}
+  In the following we aim to give a short overview on other available clustering methods while not going into detail.
+
   \subsubsection{Embeddings}
   Given a graph embedding, in which vertices are mapped to a point in $\R^n$, a frequently used measure of similarity is \textit{Cosine-Similarity}:
   $$\rho_{ij} = \arccos\left(\frac{\vec{a_i} \vec{a_j}}{\norm{\vec{a_i}}_2 \cdot \norm{\vec{a_j}}}_2\right)\,,$$
@@ -291,12 +294,15 @@ end
   It consists of multiple iterations which will each increase the number of clusters by exactly one. Each step removes the ``most valuable edge'', usually given by the edge $(v_i, v_j)$ with the highest \textit{betweenness centrality} $$b_i = \frac{2}{(n-1)(n-2)} \sum_{j=1, \neq i}^n \sum_{l=1, \neq i}^{j-1} \frac{\sigma_{jl}^{i}}{\sigma_{jl}}\,,$$ where $\sigma_{jl}$ denotes the number of shortest paths connecting vertices $v_j$ and $v_l$, and $\sigma_{jl}^i$ the number of such paths passing through vertex $v_i$ \parencite{grindrod-lecture-notes}.
   Girvan-Newman is classified as a divisive hierarchical clustering method.
 
-  \subsubsection{Map Equation}
+  \subsubsection{Random Walks and the Map Equation}
   \label{sec:mapequation}
   This rather unusual clustering approach exploits the information-theoretic duality between community structures in networks and the length of a random walker's movements on a graph.
   The map equation describes the theoretical limit of how closely a random walk can be described by $$L(C) = q H(\mathcal{Q}) + \sum_{i=1}^{n_C} p_i H(P_i)\,,$$
   where $H(\mathcal{Q})$ and $H(P_i)$ are entropies, $p_i$ is the fraction of time the random walker spends in cluster $C_i$ and $q$ the probability that a random walker switches to another cluster at any given step \parencite{mapequation}.
   See also \Cref{fig:mapequation}, which depicts a clustering of the semantic graph $G_{12}$.
+
+  The approach of considering random walks on a graph for the purposes of community detection is also utilised by Markov-Chain-Clustering methods.
+  Simmulated Annealing for instance, where clustering transition probabilities vary over time by a ``temperature'' parameter, has proven very successful in graph clustering \parencite{fortunato}.
 
   \subsubsection{Spectral Clustering Methods}
   \label{sec:spectral-clustering}
@@ -305,12 +311,14 @@ end
   For the purposes of this report, we will only consider the interesting behaviour of the eigenvalues of the graph Laplacian $L = D - A$, which can tell us how many clusters $C_i$ we may expect given the adjacency matrix $A$ and degree matrix $D$ of the graph $G = (V, E)$.
   In our case of an undirected (and connected) network, we always expect a zero eigenvalue $\lambda_1 = 0$ of the Laplacian and a number of positive eigenvalues $\lambda_i > 0$ following that. $\lambda_2$ is often referred to as the spectral gap of the graph, and its corresponding eigenvector is called the \textit{Fiedler vector} \parencite{grindrod-lecture-notes}.
 
+  \pagebreak
   \section{Network Generation and Results}
   The text corpus and vocabulary database used for the analysis in this report is based on the database behind the \href{https://www.latin-is-simple.com/en/library/}{Latin is Simple Library} which is in the public domain. The authors of these works are Augustus, Caesar, Cato, Cicero, Ovid, Hyginus, Titus, Vergil, Seneca the younger and Seneca the elder.
   In order to avoid incorporating too many grammatical particles / utility words, according to common practice \parencite{cw-biemann}, we have removed the 2000 most frequent words from the dataset.
   As Latin is a highly inflected language, we took great care to consider inflections of a Latin word as the same vocabulary entry / vertex on the graph.
 
   We will consider the semantic graph built by iterating the text corpus with neighbouring radii $r = 4$, $r = 8$ and $r = 12$ and refer to the resulting graphs as $G_4$, $G_8$ and $G_{12}$ respectively.
+  So words which appear at most $r$ words apart in the text will be represented by connected vertices in $G_r$.
   Note that a higher neighbouring radius $r$ naturally yields a higher number of edges.
 
   \begin{table}[H]
@@ -343,6 +351,7 @@ end
 
   The runner-up in terms of runtime is the Chinese Whispers algorithm which takes only a few minutes, but yields a very poor modularity $Q$.
   However, Chinese Whispers returns the most usable semantic fields which are of average size 6 for $G_4$ and $G_8$ and comprise around 30 words for $G_{12}$. Samples of the resulting semantic fields may be found in \Cref{table:samples}.
+  Similar results are found for the small clusters obtained by the modularity optimisation methods (Louvain and Greedy Modularity), but words contained in larger clusters ($> 1000$ vertices) only appear connected in a grammatical sense, so only loosely connected by the literature context or even word type.
 
   \begin{table}[H]
     \centering
@@ -426,9 +435,11 @@ end
   Which is expected, but not very easily visible in the eigenvalue spectrum.
 
   \pagebreak
-  \section{Discussion and Outlook}
-  In this report, we have introduced a few basic notions of network theory, discussed in detail two graph clustering approaches, the Louvain method (cf. \Cref{sec:louvain}) where we rederived the gain in modularity upon clustering of an isolated vertex and Chinese Whispers (cf. \Cref{sec:cw}).
-  Using a neighbourhood-based approach with parameter $r$, we constructed large networks $G_4$, $G_8$ and $G_{12}$ from an original classicist Latin literature corpus.
+  \section{Conclusion}
+  In this report, we have introduced a few basic notions of network theory, discussed in detail two graph clustering approaches, the Louvain method (cf. \Cref{sec:louvain}), where we rederived the gain in modularity upon clustering of an isolated vertex, and Chinese Whispers (cf. \Cref{sec:cw}).
+  These methods make significant progress in a problem that is usually NP-hard.
+  Using a neighbourhood-based approach with parameter $r$, we constructed large networks $G_4$, $G_8$ and $G_{12}$ from an original classicist Latin literature corpus and applied the abovementioned methods to cluster them.
+  The constructed graphs' vertices only represent principal words, so the text corpus was analyzed up to grammatical equivalences in the Latin language which is entirely original.
 
   We then analyzed three clustering methods from a computational perspective with results presented in \Cref{table:timings}, \Cref{table:samples} and visualised in \Cref{fig:three graphs}.
   The Louvain method was by far the fastest algorithm for our application.
@@ -437,6 +448,8 @@ end
   As the author describes in \cite{cw-biemann}, Chinese Whispers generally produces a fairly high number of clusters as compared to other methods, which one may circumvent by adjusting either the convergence condition or introduce a minimum cluster size through minor adjustments of the algorithm.
   Similar measures may be taken for the other algorithms.
   In our case however, the clusters produced make a reasonable impression.
+
+  Even better results for the semantic fields could be achieved by incorporating an even larger text corpus to prevent clustering of words which are only used once or twice, so only in the context given by the literature.
 
   \pagebreak
   \printbibliography
