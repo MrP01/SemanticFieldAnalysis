@@ -1,34 +1,9 @@
-\documentclass[12pt, a4paper]{article}
-\PassOptionsToPackage{sharp}{prettytex/boxes}
-\usepackage{prettytex/base}
-
-\setlength{\topmargin}{0.0in}
-\setlength{\oddsidemargin}{0.33in}
-\setlength{\textheight}{9.0in}
-\setlength{\textwidth}{6.0in}
-\renewcommand{\baselinestretch}{1.25}
-
-\usepackage{prettytex/math}
-\usepackage[nameinlink]{cleveref}
-\usepackage[cleveref]{prettytex/math-theorems}
-\usepackage{prettytex/mathematicians}
-% \usepackage{prettytex/gfx}
-% \usepackage{prettytex/code}
-\usepackage{prettytex/pseudo}
-\usepackage{prettytex/thesis}
+\documentclass{prettytex/ox/mmsc-special-topic}
 \usepackage{tabularray}
 \usepackage{cancel}
 \usepackage{bbm}
-
-\setlength{\headheight}{19.53pt}
-\setlength{\headsep}{1.8em}
+\input{customisations.tex}
 \addbibresource{sources.bib}
-\AfterEndEnvironment{minted}{\vspace*{-0.8cm}}
-\renewcommand{\operatorcolor}{black}
-
-\newcommand{\identity}{\mathbbm{1}}
-\let\oldemptyset\emptyset
-\let\emptyset\varnothing
 
 \newcommand{\topictitle}{Unsupervised Semantic Field Analysis \\ \large using Community Detection Methods}
 \newcommand{\candidatenumber}{1072462}
@@ -50,15 +25,7 @@
 
 \begin{document}
   \pagestyle{plain}
-  \begin{center}
-    \vspace*{-2.5cm}
-    \Large \topictitle \\
-    \vspace{.3cm}
-
-    \normalsize Special Topic on \textcolor{themecolor3}{\textsc{\course}}\\
-    \normalsize Candidate Number: \textcolor{themecolor3}{\candidatenumber}
-    \vspace{.3cm}
-  \end{center}
+  \mmscSpecialHeader
 
   \begin{abstract}
     \label{abstract}
